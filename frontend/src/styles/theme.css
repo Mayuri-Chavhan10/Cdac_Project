@@ -1,0 +1,274 @@
+/* ==========================================================================
+   SeedSanskriti design tokens
+   A living marketplace for seeds, saplings & buds — palette drawn from
+   soil, leaf and terracotta seed-pots rather than default Bootstrap blue.
+   ========================================================================== */
+
+:root {
+  /* Palette */
+  --ss-green-900: #1f3a22;
+  --ss-green-700: #2f5233;
+  --ss-green-500: #3f6b3f;
+  --ss-green-100: #e4ede1;
+  --ss-terracotta: #c96a3e;
+  --ss-terracotta-dark: #a8532e;
+  --ss-gold: #d4a24c;
+  --ss-cream: #f7f3ea;
+  --ss-cream-deep: #efe8d8;
+  --ss-ink: #24291f;
+  --ss-ink-soft: #5b6156;
+  --ss-line: #e0d9c6;
+  --ss-danger: #b0473e;
+
+  /* Bootstrap overrides */
+  --bs-primary: var(--ss-green-700);
+  --bs-primary-rgb: 47, 82, 51;
+  --bs-secondary: var(--ss-terracotta);
+  --bs-secondary-rgb: 201, 106, 62;
+  --bs-success: #4c7a4c;
+  --bs-success-rgb: 76, 122, 76;
+  --bs-danger: var(--ss-danger);
+  --bs-danger-rgb: 176, 71, 62;
+  --bs-warning: var(--ss-gold);
+  --bs-warning-rgb: 212, 162, 76;
+  --bs-light: var(--ss-cream);
+  --bs-light-rgb: 247, 243, 234;
+  --bs-body-color: var(--ss-ink);
+  --bs-body-bg: var(--ss-cream);
+  --bs-border-color: var(--ss-line);
+  --bs-link-color: var(--ss-green-700);
+  --bs-link-hover-color: var(--ss-terracotta-dark);
+  --bs-font-sans-serif: 'Inter', system-ui, -apple-system, sans-serif;
+  --bs-body-font-size: 0.98rem;
+}
+
+body {
+  background-color: var(--ss-cream);
+  color: var(--ss-ink);
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Fraunces', Georgia, serif;
+  color: var(--ss-green-900);
+  letter-spacing: -0.01em;
+}
+
+.text-terracotta { color: var(--ss-terracotta) !important; }
+.text-gold { color: var(--ss-gold) !important; }
+.text-soft { color: var(--ss-ink-soft) !important; }
+.bg-cream { background-color: var(--ss-cream) !important; }
+.bg-cream-deep { background-color: var(--ss-cream-deep) !important; }
+.bg-green-100 { background-color: var(--ss-green-100) !important; }
+
+/* Buttons */
+.btn-primary {
+  --bs-btn-bg: var(--ss-green-700);
+  --bs-btn-border-color: var(--ss-green-700);
+  --bs-btn-hover-bg: var(--ss-green-900);
+  --bs-btn-hover-border-color: var(--ss-green-900);
+  --bs-btn-active-bg: var(--ss-green-900);
+  --bs-btn-focus-shadow-rgb: 47, 82, 51;
+}
+.btn-secondary {
+  --bs-btn-bg: var(--ss-terracotta);
+  --bs-btn-border-color: var(--ss-terracotta);
+  --bs-btn-hover-bg: var(--ss-terracotta-dark);
+  --bs-btn-hover-border-color: var(--ss-terracotta-dark);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--ss-green-700);
+  --bs-btn-border-color: var(--ss-green-700);
+  --bs-btn-hover-bg: var(--ss-green-700);
+  --bs-btn-hover-border-color: var(--ss-green-700);
+}
+
+/* Signature: dotted "sow line" divider — evokes a row of planted seeds */
+.sow-line {
+  height: 1px;
+  border: none;
+  background-image: radial-gradient(circle, var(--ss-terracotta) 1.5px, transparent 1.6px);
+  background-size: 10px 1px;
+  background-repeat: repeat-x;
+  opacity: 0.6;
+  margin: 1.75rem 0;
+}
+
+/* App shell */
+.app-navbar {
+  background-color: var(--ss-cream);
+  border-bottom: 1px solid var(--ss-line);
+}
+.app-navbar .navbar-brand {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--ss-green-900) !important;
+}
+.app-navbar .nav-link {
+  color: var(--ss-ink) !important;
+  font-weight: 500;
+}
+.app-navbar .nav-link.active {
+  color: var(--ss-green-700) !important;
+  font-weight: 600;
+}
+
+.app-footer {
+  background-color: var(--ss-green-900);
+  color: var(--ss-cream);
+}
+.app-footer a { color: var(--ss-cream); opacity: 0.85; text-decoration: none; }
+.app-footer a:hover { opacity: 1; text-decoration: underline; }
+
+/* Cards */
+.card {
+  border-color: var(--ss-line);
+}
+.product-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.75rem 1.5rem rgba(31, 58, 34, 0.12);
+}
+.product-card .card-img-top {
+  height: 190px;
+  object-fit: cover;
+  background-color: var(--ss-green-100);
+}
+.category-chip {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background-color: var(--ss-green-100);
+  color: var(--ss-green-900);
+}
+
+/* Sidebar (dashboards) */
+.app-sidebar {
+  background-color: var(--ss-green-900);
+  min-height: 100%;
+  color: var(--ss-cream);
+}
+.app-sidebar .nav-link {
+  color: rgba(247, 243, 234, 0.78);
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  margin-bottom: 0.15rem;
+  font-weight: 500;
+}
+.app-sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.app-sidebar .nav-link.active {
+  background-color: var(--ss-terracotta);
+  color: #fff;
+}
+.app-sidebar .sidebar-heading {
+  color: rgba(247, 243, 234, 0.5);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 0.9rem;
+}
+
+.stat-card {
+  border-radius: 0.7rem;
+  border: 1px solid var(--ss-line);
+  background: #fff;
+}
+.stat-card .stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+/* Hero */
+.hero-section {
+  background: linear-gradient(135deg, var(--ss-green-900) 0%, var(--ss-green-700) 60%, var(--ss-green-500) 100%);
+  color: var(--ss-cream);
+  position: relative;
+  overflow: hidden;
+}
+.hero-section h1 { color: #fff; }
+
+/* Table */
+.table-ss thead {
+  background-color: var(--ss-green-100);
+}
+.table-ss thead th {
+  color: var(--ss-green-900);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: none;
+  white-space: nowrap;
+}
+.table-ss tbody tr:hover {
+  background-color: var(--ss-cream-deep);
+}
+
+.sortable-th { cursor: pointer; user-select: none; }
+.sortable-th:hover { color: var(--ss-terracotta); }
+
+/* Star rating */
+.star-rating .bi-star-fill,
+.star-rating .bi-star-half { color: var(--ss-gold); }
+.star-rating .bi-star { color: var(--ss-line); }
+
+/* Auth pages */
+.auth-wrapper {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  background: var(--ss-cream-deep);
+}
+.auth-card {
+  border: 1px solid var(--ss-line);
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+/* Misc */
+.cursor-pointer { cursor: pointer; }
+.min-vh-content { min-height: 60vh; }
+.badge-status {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.form-label {
+  font-weight: 500;
+  color: var(--ss-green-900);
+}
+.section-eyebrow {
+  color: var(--ss-terracotta);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.toast-stack {
+  position: fixed;
+  top: 80px;
+  right: 1rem;
+  z-index: 1080;
+}
+
+@media (max-width: 767.98px) {
+  .app-sidebar { min-height: auto; }
+}
