@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import authService from '../../services/authService';
 import AlertMessage from '../../components/common/AlertMessage';
 import Spinner from '../../components/common/Spinner';
 import useToast from '../../hooks/useToast';
+import useAuth from '../../hooks/useAuth';
 
 const initialForm = {
   name: '',
@@ -17,9 +18,35 @@ const initialForm = {
   gstNumber: '',
 };
 
-export default function Register() {
-  const [accountType, setAccountType] = useState('customer');
-  const [form, setForm] = useState(initialForm);
+/**
+ * Also used, in "upgrade" mode, as the Supplier Registration/Upgrade page
+ * for a customer who is already logged in (see /register/supplier-upgrade
+ * in AppRoutes.jsx). In that mode the account-type toggle is hidden (the
+ * customer is always applying as a supplier), their known profile details
+ * are pre-filled, and a fresh submit still goes through the existing
+ * POST /api/auth/register/supplier endpoint - supplier accounts require
+ * their own login (the backend keys accounts by unique email), so the
+ * customer is asked for a business email/password for the new supplier
+ * account rather than having their existing account's role changed.
+ */
+export default function Register({ upgrade = false }) {
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const preselectSupplier = upgrade || searchParams.get('type') === 'supplier';
+
+  const [accountType, setAccountType] = useState(preselectSupplier ? 'supplier' : 'customer');
+  const [form, setForm] = useState(() =>
+    upgrade && user
+      ? {
+          ...initialForm,
+          name: user.name || '',
+          phoneNumber: user.phoneNumber || '',
+          address: user.address || '',
+          city: user.city || '',
+          pincode: user.pincode || '',
+        }
+      : initialForm,
+  );
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -42,11 +69,17 @@ export default function Register() {
       if (accountType === 'customer') {
         await authService.registerCustomer(form);
         showSuccess('Account created! Please log in.');
+        navigate('/login');
       } else {
         await authService.registerSupplier(form);
-        showSuccess('Supplier account submitted for approval. Please log in.');
+        if (upgrade) {
+          showSuccess('Supplier application submitted! Our team will review it shortly.');
+          navigate('/customer/dashboard');
+        } else {
+          showSuccess('Supplier account submitted for approval. Please log in.');
+          navigate('/login');
+        }
       }
-      navigate('/login');
     } catch (err) {
       setError(err.message);
       if (err.fieldErrors) setFieldErrors(err.fieldErrors);
@@ -63,30 +96,46 @@ export default function Register() {
             <div className="auth-card shadow-sm p-4 p-md-5">
               <div className="text-center mb-4">
                 <i className="bi bi-flower2 text-terracotta" style={{ fontSize: '2rem' }} />
-                <h2 className="font-display mt-2 mb-0">Create your account</h2>
-                <p className="text-soft">Join SeedSanskriti as a customer or supplier</p>
+                <h2 className="font-display mt-2 mb-0">
+                  {upgrade ? 'Apply as a Supplier' : 'Create your account'}
+                </h2>
+                <p className="text-soft">
+                  {upgrade
+                    ? "We've pre-filled what we already know about you - just add your business details."
+                    : 'Join SeedSanskriti as a customer or supplier'}
+                </p>
               </div>
 
-              <ul className="nav nav-pills nav-justified mb-4">
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    className={`nav-link ${accountType === 'customer' ? 'active' : ''}`}
-                    onClick={() => setAccountType('customer')}
-                  >
-                    <i className="bi bi-person me-1" /> I'm a Customer
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    className={`nav-link ${accountType === 'supplier' ? 'active' : ''}`}
-                    onClick={() => setAccountType('supplier')}
-                  >
-                    <i className="bi bi-shop me-1" /> I'm a Supplier
-                  </button>
-                </li>
-              </ul>
+              {!upgrade && (
+                <ul className="nav nav-pills nav-justified mb-4">
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${accountType === 'customer' ? 'active' : ''}`}
+                      onClick={() => setAccountType('customer')}
+                    >
+                      <i className="bi bi-person me-1" /> I'm a Customer
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${accountType === 'supplier' ? 'active' : ''}`}
+                      onClick={() => setAccountType('supplier')}
+                    >
+                      <i className="bi bi-shop me-1" /> I'm a Supplier
+                    </button>
+                  </li>
+                </ul>
+              )}
+
+              {upgrade && (
+                <div className="alert alert-info small">
+                  <i className="bi bi-info-circle me-1" />
+                  Supplier accounts are kept separate from customer accounts, so please use a
+                  different email and password below for your supplier login.
+                </div>
+              )}
 
               <AlertMessage message={error} onClose={() => setError(null)} />
 
@@ -151,13 +200,17 @@ export default function Register() {
                 </div>
 
                 <button type="submit" className="btn btn-primary w-100 mt-2" disabled={loading}>
-                  {loading ? (<><Spinner className="me-2" />Creating account…</>) : 'Create Account'}
+                  {loading
+                    ? (<><Spinner className="me-2" />{upgrade ? 'Submitting…' : 'Creating account…'}</>)
+                    : (upgrade ? 'Submit Supplier Application' : 'Create Account')}
                 </button>
               </form>
 
-              <p className="text-center mt-4 mb-0 text-soft">
-                Already have an account? <Link to="/login">Log in</Link>
-              </p>
+              {!upgrade && (
+                <p className="text-center mt-4 mb-0 text-soft">
+                  Already have an account? <Link to="/login">Log in</Link>
+                </p>
+              )}
             </div>
           </div>
         </div>

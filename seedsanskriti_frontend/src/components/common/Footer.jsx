@@ -1,6 +1,12 @@
 import { Link } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
+import { getBecomeSupplierRoute, getBecomeSupplierLabel } from '../../utils/supplierCta';
 
 export default function Footer() {
+  const { isAuthenticated, role } = useAuth();
+  const supplierCtaRoute = getBecomeSupplierRoute({ isAuthenticated, role });
+  const supplierCtaLabel = getBecomeSupplierLabel({ isAuthenticated, role });
+
   return (
     <footer className="app-footer pt-5 pb-4 mt-auto">
       <div className="container">
@@ -28,7 +34,7 @@ export default function Footer() {
             <ul className="list-unstyled small">
               <li><Link to="/about">About Us</Link></li>
               <li><Link to="/contact">Contact</Link></li>
-              <li><Link to="/register">Become a Supplier</Link></li>
+              <li><Link to={supplierCtaRoute}>{supplierCtaLabel}</Link></li>
             </ul>
           </div>
           <div className="col-12 col-md-4">

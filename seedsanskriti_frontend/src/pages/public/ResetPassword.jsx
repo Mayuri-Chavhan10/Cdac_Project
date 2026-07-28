@@ -3,10 +3,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import authService from '../../services/authService';
 import AlertMessage from '../../components/common/AlertMessage';
 import Spinner from '../../components/common/Spinner';
+import useToast from '../../hooks/useToast';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { showSuccess } = useToast();
   const [form, setForm] = useState({ token: searchParams.get('token') || '', newPassword: '', confirmPassword: '' });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,8 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      await authService.resetPassword({ token: form.token, newPassword: form.newPassword });
+      const response = await authService.resetPassword({ token: form.token, newPassword: form.newPassword });
+      showSuccess(response || 'Password reset successfully. Please log in with your new password.');
       navigate('/login');
     } catch (err) {
       setError(err.message);

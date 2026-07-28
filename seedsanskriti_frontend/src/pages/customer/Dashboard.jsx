@@ -36,16 +36,12 @@ export default function CustomerDashboard() {
 
   if (loading) return <Loader label="Loading your dashboard…" />;
 
-  const totalSpent = orders
-    .filter((o) => o.orderStatus !== 'CANCELLED')
-    .reduce((sum, o) => sum + o.totalAmount, 0);
   const recentOrders = [...orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)).slice(0, 5);
 
   const stats = [
     { label: 'Total Orders', value: orders.length, icon: 'bi-bag-check', bg: 'bg-green-100', color: 'text-primary' },
     { label: 'Items in Cart', value: cartCount, icon: 'bi-cart3', bg: 'bg-warning-subtle', color: 'text-warning' },
     { label: 'Wishlist Items', value: wishlistCount, icon: 'bi-heart', bg: 'bg-danger-subtle', color: 'text-danger' },
-    { label: 'Total Spent', value: formatCurrency(totalSpent), icon: 'bi-wallet2', bg: 'bg-info-subtle', color: 'text-info' },
   ];
 
   return (
@@ -57,7 +53,7 @@ export default function CustomerDashboard() {
 
       <div className="row g-3 mb-4">
         {stats.map((s) => (
-          <div className="col-6 col-lg-3" key={s.label}>
+          <div className="col-12 col-sm-6 col-lg-4" key={s.label}>
             <div className="stat-card p-3 h-100">
               <div className={`stat-icon ${s.bg} ${s.color} mb-2`}>
                 <i className={`bi ${s.icon}`} />

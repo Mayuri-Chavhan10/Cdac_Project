@@ -25,4 +25,8 @@ public class PaymentResponse {
     private String transactionId;
 
     private LocalDateTime paymentDate;
+
+    // Null for payments not made through Razorpay (e.g. Cash on Delivery),
+    // so existing consumers of this DTO are unaffected.
+    private String razorpayOrderId;
 }

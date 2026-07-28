@@ -24,7 +24,7 @@ export default function Navbar() {
       <div className="container">
         <NavLink to="/" className="navbar-brand d-flex align-items-center gap-2">
           <i className="bi bi-flower2 text-terracotta" />
-          SEEDSanskriti
+          SeedSanskriti
         </NavLink>
 
         <button

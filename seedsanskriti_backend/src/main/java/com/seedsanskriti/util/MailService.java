@@ -1,10 +1,14 @@
 package com.seedsanskriti.util;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +34,10 @@ public class MailService {
     @Value("${spring.mail.username:no-reply@seedsanskriti.com}")
     private String fromAddress;
 
+    /**
+     * Plain-text email. Kept for any simple/internal notifications that
+     * don't need a styled template.
+     */
     public void send(String to, String subject, String body) {
 
         if (!mailEnabled) {
@@ -47,11 +55,41 @@ public class MailService {
 
             mailSender.send(message);
 
-        } catch (Exception e) {
+        } catch (MailException e) {
             // Never let a mail failure break the calling flow (e.g. a
             // password reset should still succeed even if the email
             // provider is temporarily down) - just log it.
             log.error("Failed to send email to {}: {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * HTML email (e.g. the password-reset link) with a plain-text fallback
+     * for mail clients that don't render HTML. Same fail-safe behaviour as
+     * send(): a mail/SMTP failure is logged, never thrown, so it can't break
+     * whatever flow triggered the email.
+     */
+    public void sendHtml(String to, String subject, String htmlBody, String plainTextFallback) {
+
+        if (!mailEnabled) {
+            log.info("[MAIL DISABLED] Would send HTML email to {} | subject: {} | body: {}",
+                    to, subject, plainTextFallback);
+            return;
+        }
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(plainTextFallback, htmlBody);
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException | MailException e) {
+            log.error("Failed to send HTML email to {}: {}", to, e.getMessage());
         }
     }
 }

@@ -46,4 +46,12 @@ public class Payment extends BaseEntity{
     
     @Column(name = "transaction_id", unique = true)
     private String transactionId;
+
+    // Populated only for payments made through Razorpay; null for other
+    // methods (e.g. Cash on Delivery) so existing rows/behavior are untouched.
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_signature", length = 512)
+    private String razorpaySignature;
 }

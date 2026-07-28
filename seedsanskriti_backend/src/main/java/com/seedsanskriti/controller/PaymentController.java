@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.seedsanskriti.dto.PaymentRequest;
 import com.seedsanskriti.dto.PaymentResponse;
+import com.seedsanskriti.dto.RazorpayOrderRequest;
+import com.seedsanskriti.dto.RazorpayOrderResponse;
+import com.seedsanskriti.dto.RazorpayVerifyRequest;
 import com.seedsanskriti.service.PaymentService;
 
 import jakarta.validation.Valid;
@@ -53,5 +56,29 @@ public class PaymentController {
                 paymentService.getPaymentById(
                         paymentId,
                         authentication));
+    }
+
+    // ==========================================================
+    // RAZORPAY
+    // ==========================================================
+
+    @PostMapping("/razorpay/create-order")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<RazorpayOrderResponse> createRazorpayOrder(
+            @Valid @RequestBody RazorpayOrderRequest request,
+            Authentication authentication) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(paymentService.createRazorpayOrder(request, authentication));
+    }
+
+    @PostMapping("/razorpay/verify")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<PaymentResponse> verifyRazorpayPayment(
+            @Valid @RequestBody RazorpayVerifyRequest request,
+            Authentication authentication) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(paymentService.verifyRazorpayPayment(request, authentication));
     }
 }

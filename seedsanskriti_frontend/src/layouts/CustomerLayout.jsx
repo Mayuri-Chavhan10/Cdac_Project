@@ -17,10 +17,9 @@ const groups = [
     ],
   },
   {
-    heading: 'Tracking',
+    heading: 'Payments',
     items: [
       { to: '/customer/payments', label: 'Payment History', icon: 'bi-credit-card' },
-      { to: '/customer/deliveries', label: 'Delivery Tracking', icon: 'bi-truck' },
     ],
   },
 ];

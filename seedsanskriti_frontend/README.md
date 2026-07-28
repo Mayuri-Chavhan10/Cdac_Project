@@ -32,6 +32,17 @@ VITE_API_BASE_URL=http://localhost:8080/api
 Point this at wherever your Spring Boot backend is running. Make sure the backend's CORS
 configuration allows requests from the frontend's origin (`http://localhost:3000` in dev).
 
+### Razorpay
+
+```
+VITE_RAZORPAY_KEY=YOUR_KEY_ID
+```
+
+This is the **public** key id only (safe in the browser) — used as a fallback if the
+backend's `create-order` response doesn't include one. The secret key never goes anywhere
+near the frontend; signature verification happens entirely on the backend. See
+`src/services/razorpayService.js` and the Payment Method section of `Checkout.jsx`.
+
 ## Project structure
 
 ```

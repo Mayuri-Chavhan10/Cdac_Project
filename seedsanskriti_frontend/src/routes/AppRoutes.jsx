@@ -29,7 +29,6 @@ import Checkout from '../pages/customer/Checkout';
 import Orders from '../pages/customer/Orders';
 import OrderDetails from '../pages/customer/OrderDetails';
 import PaymentHistory from '../pages/customer/PaymentHistory';
-import DeliveryTracking from '../pages/customer/DeliveryTracking';
 import Wishlist from '../pages/customer/Wishlist';
 
 import SupplierDashboard from '../pages/supplier/Dashboard';
@@ -76,6 +75,8 @@ export default function AppRoutes() {
       {/* Customer area */}
       <Route element={<ProtectedRoute />}>
         <Route element={<RoleRoute allowedRoles={[ROLES.CUSTOMER]} />}>
+          {/* Outside CustomerLayout: full-width auth-style page, reused from Register */}
+          <Route path="/register/supplier-upgrade" element={<Register upgrade />} />
           <Route element={<CustomerLayout />}>
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
             <Route path="/customer/profile" element={<Profile />} />
@@ -85,7 +86,6 @@ export default function AppRoutes() {
             <Route path="/customer/orders" element={<Orders />} />
             <Route path="/customer/orders/:id" element={<OrderDetails />} />
             <Route path="/customer/payments" element={<PaymentHistory />} />
-            <Route path="/customer/deliveries" element={<DeliveryTracking />} />
             <Route path="/customer/wishlist" element={<Wishlist />} />
           </Route>
         </Route>

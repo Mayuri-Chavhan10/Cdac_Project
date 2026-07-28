@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import orderService from '../../services/orderService';
 import paymentService from '../../services/paymentService';
+import { openRazorpayCheckout } from '../../services/razorpayService';
 import useCart from '../../hooks/useCart';
 import useAuth from '../../hooks/useAuth';
 import useToast from '../../hooks/useToast';
@@ -9,7 +10,11 @@ import AlertMessage from '../../components/common/AlertMessage';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
 import { formatCurrency } from '../../utils/formatters';
-import { PAYMENT_METHOD, PAYMENT_METHOD_LABELS } from '../../utils/constants';
+
+const PAYMENT_OPTION = {
+  ONLINE: 'ONLINE',
+  COD: 'COD',
+};
 
 export default function Checkout() {
   const { cart, loading, refreshCart } = useCart();
@@ -23,7 +28,7 @@ export default function Checkout() {
     shippingPincode: '',
     contactPhone: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD.CASH_ON_DELIVERY);
+  const [paymentOption, setPaymentOption] = useState(PAYMENT_OPTION.ONLINE);
   const [useProfileAddress, setUseProfileAddress] = useState(true);
   const [error, setError] = useState(null);
   const [placing, setPlacing] = useState(false);
@@ -46,6 +51,37 @@ export default function Checkout() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Cash on Delivery keeps using the existing, unchanged /payments/pay flow.
+  const payCashOnDelivery = async (orderId) => {
+    await paymentService.pay({ orderId, paymentMethod: 'CASH_ON_DELIVERY' });
+  };
+
+  // Online payments: create a Razorpay order server-side, open the real
+  // Razorpay Checkout modal, then verify the signature server-side.
+  const payWithRazorpay = async (orderId) => {
+    const razorpayOrder = await paymentService.createRazorpayOrder(orderId);
+
+    const result = await openRazorpayCheckout({
+      keyId: razorpayOrder.keyId || import.meta.env.VITE_RAZORPAY_KEY,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      razorpayOrderId: razorpayOrder.razorpayOrderId,
+      description: `SeedSanskriti Order #${orderId}`,
+      prefill: {
+        name: user?.name,
+        email: user?.email,
+        contact: user?.phoneNumber,
+      },
+    });
+
+    await paymentService.verifyRazorpayPayment({
+      orderId,
+      razorpayOrderId: result.razorpayOrderId,
+      razorpayPaymentId: result.razorpayPaymentId,
+      razorpaySignature: result.razorpaySignature,
+    });
+  };
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setError(null);
@@ -53,14 +89,20 @@ export default function Checkout() {
     try {
       const orderPayload = useProfileAddress ? null : form;
       const orderResponse = await orderService.placeOrder(orderPayload);
+
       try {
-        await paymentService.pay({ orderId: orderResponse.orderId, paymentMethod });
+        if (paymentOption === PAYMENT_OPTION.COD) {
+          await payCashOnDelivery(orderResponse.orderId);
+        } else {
+          await payWithRazorpay(orderResponse.orderId);
+        }
       } catch (payErr) {
-        showError(`Order placed, but payment failed: ${payErr.message}`);
+        showError(`Order placed, but payment was not completed: ${payErr.message}`);
         await refreshCart();
         navigate(`/customer/orders/${orderResponse.orderId}`);
         return;
       }
+
       await refreshCart();
       showSuccess('Order placed and paid successfully!');
       navigate(`/customer/orders/${orderResponse.orderId}`);
@@ -144,21 +186,38 @@ export default function Checkout() {
             <div className="card border-0 shadow-sm p-4">
               <h6 className="mb-3">Payment Method</h6>
               <div className="d-flex flex-column gap-2">
-                {Object.values(PAYMENT_METHOD).map((method) => (
-                  <label
-                    key={method}
-                    className={`d-flex align-items-center gap-2 border rounded-3 p-3 cursor-pointer ${paymentMethod === method ? 'border-primary bg-green-100' : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      className="form-check-input mt-0"
-                      checked={paymentMethod === method}
-                      onChange={() => setPaymentMethod(method)}
-                    />
-                    {PAYMENT_METHOD_LABELS[method]}
-                  </label>
-                ))}
+                <label
+                  className={`d-flex align-items-center gap-2 border rounded-3 p-3 cursor-pointer ${paymentOption === PAYMENT_OPTION.ONLINE ? 'border-primary bg-green-100' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentOption"
+                    className="form-check-input mt-0"
+                    checked={paymentOption === PAYMENT_OPTION.ONLINE}
+                    onChange={() => setPaymentOption(PAYMENT_OPTION.ONLINE)}
+                  />
+                  <span>
+                    <i className="bi bi-shield-check me-2 text-primary" />
+                    Pay Online — UPI, Card or Net Banking
+                    <span className="d-block text-soft small">Secured by Razorpay</span>
+                  </span>
+                </label>
+
+                <label
+                  className={`d-flex align-items-center gap-2 border rounded-3 p-3 cursor-pointer ${paymentOption === PAYMENT_OPTION.COD ? 'border-primary bg-green-100' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentOption"
+                    className="form-check-input mt-0"
+                    checked={paymentOption === PAYMENT_OPTION.COD}
+                    onChange={() => setPaymentOption(PAYMENT_OPTION.COD)}
+                  />
+                  <span>
+                    <i className="bi bi-cash-coin me-2 text-primary" />
+                    Cash on Delivery
+                  </span>
+                </label>
               </div>
             </div>
           </div>
@@ -180,7 +239,7 @@ export default function Checkout() {
                 <span className="text-terracotta">{formatCurrency(cart.totalAmount)}</span>
               </div>
               <button type="submit" className="btn btn-primary w-100" disabled={placing}>
-                {placing ? (<><Spinner className="me-2" />Placing order…</>) : 'Place Order & Pay'}
+                {placing ? (<><Spinner className="me-2" />{paymentOption === PAYMENT_OPTION.ONLINE ? 'Opening payment…' : 'Placing order…'}</>) : 'Place Order & Pay'}
               </button>
             </div>
           </div>

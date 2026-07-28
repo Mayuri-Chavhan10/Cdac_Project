@@ -9,6 +9,7 @@ import useCart from '../../hooks/useCart';
 import useToast from '../../hooks/useToast';
 import cartService from '../../services/cartService';
 import { CATEGORY_OPTIONS, CATEGORY_LABELS, ROLES } from '../../utils/constants';
+import { getBecomeSupplierRoute, getBecomeSupplierLabel } from '../../utils/supplierCta';
 
 const categoryIcon = {
   VEGETABLE_SEEDS: 'bi-basket',
@@ -74,11 +75,12 @@ export default function Home() {
                 <Link to="/products" className="btn btn-secondary btn-lg">
                   <i className="bi bi-shop me-2" /> Shop Products
                 </Link>
-                {!isAuthenticated && (
-                  <Link to="/register" className="btn btn-outline-light btn-lg">
-                    Become a Supplier
-                  </Link>
-                )}
+                <Link
+                  to={getBecomeSupplierRoute({ isAuthenticated, role })}
+                  className="btn btn-outline-light btn-lg"
+                >
+                  {getBecomeSupplierLabel({ isAuthenticated, role })}
+                </Link>
               </div>
             </div>
             <div className="col-lg-5 d-none d-lg-block text-center">

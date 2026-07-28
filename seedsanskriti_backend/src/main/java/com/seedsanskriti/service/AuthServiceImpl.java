@@ -176,14 +176,64 @@ public class AuthServiceImpl implements AuthService {
 
 	    String resetLink = resetPasswordUrl + "?token=" + resetToken.getToken();
 
-	    mailService.send(
+	    String plainTextBody = "We received a request to reset your password. This link expires in "
+	            + tokenExpiryMinutes + " minutes:\n\n" + resetLink
+	            + "\n\nIf you didn't request this, you can safely ignore this email.";
+
+	    mailService.sendHtml(
 	            user.getEmail(),
 	            "Reset your SeedSanskriti password",
-	            "We received a request to reset your password. This link expires in "
-	                    + tokenExpiryMinutes + " minutes:\n\n" + resetLink
-	                    + "\n\nIf you didn't request this, you can safely ignore this email.");
+	            buildPasswordResetHtml(user.getName(), resetLink, tokenExpiryMinutes),
+	            plainTextBody);
 
 	    return genericMessage;
+	}
+
+	/**
+	 * Simple, self-contained (inline-styled, no external assets) HTML email
+	 * template for the password-reset link. Kept inline rather than pulled
+	 * from a templating engine since the project has no Thymeleaf/Freemarker
+	 * dependency and this is the only templated email the app sends.
+	 */
+	private String buildPasswordResetHtml(String userName, String resetLink, int expiryMinutes) {
+	    String safeName = (userName == null || userName.isBlank()) ? "there" : userName;
+	    return "<!DOCTYPE html>"
+	            + "<html><body style=\"margin:0;padding:0;background-color:#f4f1ea;font-family:'Segoe UI',Arial,sans-serif;\">"
+	            + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#f4f1ea;padding:32px 0;\">"
+	            + "<tr><td align=\"center\">"
+	            + "<table role=\"presentation\" width=\"480\" cellpadding=\"0\" cellspacing=\"0\" "
+	            + "style=\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);\">"
+	            + "<tr><td style=\"background-color:#2f6f4f;padding:24px 32px;\">"
+	            + "<span style=\"color:#ffffff;font-size:20px;font-weight:600;\">&#127793; SeedSanskriti</span>"
+	            + "</td></tr>"
+	            + "<tr><td style=\"padding:32px;\">"
+	            + "<h1 style=\"margin:0 0 16px;font-size:20px;color:#2c2c2c;\">Reset your password</h1>"
+	            + "<p style=\"margin:0 0 16px;font-size:15px;line-height:1.6;color:#4a4a4a;\">Hi " + safeName + ",</p>"
+	            + "<p style=\"margin:0 0 24px;font-size:15px;line-height:1.6;color:#4a4a4a;\">"
+	            + "We received a request to reset the password for your SeedSanskriti account. "
+	            + "Click the button below to choose a new password. This link will expire in "
+	            + expiryMinutes + " minutes.</p>"
+	            + "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\">"
+	            + "<tr><td style=\"border-radius:8px;background-color:#c96f4a;\">"
+	            + "<a href=\"" + resetLink + "\" target=\"_blank\" "
+	            + "style=\"display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;\">"
+	            + "Reset Password</a>"
+	            + "</td></tr></table>"
+	            + "<p style=\"margin:24px 0 0;font-size:13px;line-height:1.6;color:#8a8a8a;\">"
+	            + "If the button doesn't work, copy and paste this link into your browser:<br>"
+	            + "<a href=\"" + resetLink + "\" style=\"color:#2f6f4f;word-break:break-all;\">" + resetLink + "</a></p>"
+	            + "<p style=\"margin:24px 0 0;font-size:13px;line-height:1.6;color:#8a8a8a;\">"
+	            + "If you didn't request a password reset, you can safely ignore this email - "
+	            + "your password will remain unchanged.</p>"
+	            + "</td></tr>"
+	            + "<tr><td style=\"background-color:#f4f1ea;padding:20px 32px;text-align:center;\">"
+	            + "<span style=\"font-size:12px;color:#a0a0a0;\">&copy; " + java.time.Year.now()
+	            + " SeedSanskriti. All rights reserved.</span>"
+	            + "</td></tr>"
+	            + "</table>"
+	            + "</td></tr>"
+	            + "</table>"
+	            + "</body></html>";
 	}
 
 	@Override
