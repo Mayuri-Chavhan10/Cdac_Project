@@ -25,7 +25,7 @@ export default function Cart() {
     if (quantity < 1) return;
     setBusyId(item.productId);
     try {
-      await cartService.updateCartItem({ cartItemId: item.productId, quantity });
+      await cartService.updateCartItem({ cartItemId: item.id, quantity });
       await refreshCart();
     } catch (err) {
       showError(err.message);
@@ -42,7 +42,7 @@ export default function Cart() {
     if (!ok) return;
     setBusyId(item.productId);
     try {
-      await cartService.removeCartItem(item.productId);
+      await cartService.removeCartItem(item.id);
       await refreshCart();
       showSuccess('Item removed from cart');
     } catch (err) {
